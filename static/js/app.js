@@ -895,3 +895,4 @@ function updateChecklistProgress() {
   document.getElementById('checklistCountText').innerText = `${checked} of ${total} Concepts Checked`;
   document.getElementById('checklistPercentText').innerText = `${percent}% Ready`;
 }
+

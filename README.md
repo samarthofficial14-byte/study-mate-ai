@@ -179,3 +179,4 @@ You can copy and adapt these bullet points directly into your hackathon / softwa
 
 ## 📜 License
 This project is licensed under the MIT License.
+

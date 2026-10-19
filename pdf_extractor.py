@@ -77,3 +77,4 @@ def extract_text_from_pdf(file_stream_or_path, max_pages: int = 50) -> Dict[str,
             "word_count": 0,
             "error": f"Failed to parse PDF: {str(e)}"
         }
+

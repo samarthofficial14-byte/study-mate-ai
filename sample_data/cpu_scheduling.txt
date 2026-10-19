@@ -39,3 +39,4 @@ Major problem: Starvation or Indefinite Blocking. Low priority processes may nev
 D. Round Robin (RR):
 Designed specifically for time-sharing systems. A small unit of time, called a Time Quantum (typically 10 to 100 milliseconds), is defined. The ready queue is treated as a circular queue. The CPU scheduler goes around the ready queue, allocating the CPU to each process for a time interval of up to 1 time quantum.
 If the time quantum is extremely large, RR degenerates into FCFS. If the time quantum is too small, context switch overhead dominates.
+

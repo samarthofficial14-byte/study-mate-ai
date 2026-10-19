@@ -164,10 +164,16 @@ def handle_exam_plan():
 
 
 if __name__ == '__main__':
+    import sys
+    if hasattr(sys.stdout, 'reconfigure'):
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
     port = int(os.environ.get("PORT", 5000))
-    print(f"\n==================================================")
-    print(f"🎓 StudyMate AI - AI Study Companion Server")
-    print(f"📡 Running locally at: http://127.0.0.1:{port}")
-    print(f"==================================================\n")
-    app.run(host='0.0.0.0', port=port, debug=True)
+    print("\n" + "=" * 50)
+    print("  StudyMate AI - AI Study Companion Server")
+    print(f"  Running locally at: http://127.0.0.1:{port}")
+    print("=" * 50 + "\n")
+    app.run(host='0.0.0.0', port=port, debug=False)
 

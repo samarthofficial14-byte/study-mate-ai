@@ -1,0 +1,41 @@
+CPU SCHEDULING IN OPERATING SYSTEMS
+
+1. INTRODUCTION & BASICS
+CPU scheduling is the basis of multi-programmed operating systems. By switching the CPU among processes, the operating system can make the computer more productive.
+In a single-processor system, only one process can run at a time; any others must wait until the CPU is free and can be rescheduled. The objective of multiprogramming is to have some process running at all times, to maximize CPU utilization.
+
+2. CPU-I/O BURST CYCLE
+Process execution consists of a cycle of CPU execution and I/O wait. Processes alternate between these two states. Process execution begins with a CPU burst, followed by an I/O burst, followed by another CPU burst, and so on. Eventually, the final CPU burst ends with a system request to terminate execution.
+
+3. CPU SCHEDULER & PREEMPTION
+Whenever the CPU becomes idle, the operating system must select one of the processes in the ready queue to be executed. The selection process is carried out by the short-term scheduler (or CPU scheduler).
+CPU scheduling decisions take place under four conditions:
+1. When a process switches from running state to waiting state (e.g., I/O request).
+2. When a process switches from running state to ready state (e.g., interrupt).
+3. When a process switches from waiting state to ready state (e.g., completion of I/O).
+4. When a process terminates.
+When scheduling takes place only under circumstances 1 and 4, the scheduling scheme is Non-Preemptive. Otherwise, it is Preemptive.
+
+4. SCHEDULING CRITERIA
+Different CPU-scheduling algorithms have different properties. The criteria include:
+- CPU Utilization: Keep the CPU as busy as possible (typically 40% to 90%).
+- Throughput: Number of processes completed per unit time.
+- Turnaround Time: Interval from the time of submission of a process to the time of completion. (Turnaround Time = Completion Time - Arrival Time).
+- Waiting Time: Total amount of time a process has spent waiting in the ready queue. (Waiting Time = Turnaround Time - Burst Time).
+- Response Time: Time from the submission of a request until the first response is produced.
+
+5. POPULAR SCHEDULING ALGORITHMS
+A. First-Come, First-Served (FCFS):
+The process that requests the CPU first is allocated the CPU first. It is non-preemptive. A major disadvantage is the Convoy Effect: short processes wait behind one long CPU-bound process, resulting in high average waiting times.
+
+B. Shortest-Job-First (SJF):
+Associates with each process the length of its next CPU burst. When the CPU is available, it is assigned to the process with the smallest next CPU burst. SJF is provably optimal because it gives the minimum average waiting time.
+Preemptive SJF is known as Shortest-Remaining-Time-First (SRTF). Difficulty: predicting the exact length of the next CPU burst.
+
+C. Priority Scheduling:
+A priority number (integer) is associated with each process. The CPU is allocated to the process with the highest priority (commonly smallest integer = highest priority).
+Major problem: Starvation or Indefinite Blocking. Low priority processes may never execute. Solution: Aging, a technique of gradually increasing the priority of processes that wait in the system for a long time.
+
+D. Round Robin (RR):
+Designed specifically for time-sharing systems. A small unit of time, called a Time Quantum (typically 10 to 100 milliseconds), is defined. The ready queue is treated as a circular queue. The CPU scheduler goes around the ready queue, allocating the CPU to each process for a time interval of up to 1 time quantum.
+If the time quantum is extremely large, RR degenerates into FCFS. If the time quantum is too small, context switch overhead dominates.

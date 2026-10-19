@@ -1,0 +1,35 @@
+MACHINE LEARNING FUNDAMENTALS & ALGORITHMS
+
+1. WHAT IS MACHINE LEARNING?
+Machine Learning (ML) is a subset of Artificial Intelligence that gives computers the ability to learn and improve from experience without being explicitly programmed.
+Core paradigm: Instead of writing rules manually, ML algorithms find statistical patterns in historical data to map inputs (X) to outputs (y).
+
+2. MAIN TYPES OF MACHINE LEARNING
+A. Supervised Learning:
+The model is trained on labeled data (input-output pairs).
+- Regression: Predicting continuous numerical values (e.g., house prices, temperature). Algorithms: Linear Regression, Ridge/Lasso, Support Vector Regression (SVR).
+- Classification: Predicting discrete categorical classes (e.g., spam vs not spam, malignant vs benign). Algorithms: Logistic Regression, Decision Trees, Random Forests, Naive Bayes.
+
+B. Unsupervised Learning:
+The model is trained on unlabeled data, seeking underlying structure, patterns, or groupings.
+- Clustering: Grouping similar instances together. Algorithms: K-Means, DBSCAN, Hierarchical Clustering.
+- Dimensionality Reduction: Compressing feature space while preserving variance. Algorithms: Principal Component Analysis (PCA), t-SNE.
+
+C. Reinforcement Learning:
+An agent learns to make decisions by taking actions in an environment to maximize cumulative reward.
+Key concepts: Agent, State, Action, Reward, Policy, Q-Learning.
+
+3. OVERFITTING VS UNDERFITTING
+- Overfitting (High Variance): The model memorizes training noise and performs poorly on unseen test data.
+  Remedies: Cross-validation, regularization (L1/L2), pruning decision trees, dropout in neural networks, gathering more training data.
+- Underfitting (High Bias): The model is too simple to capture the underlying relationship (e.g., fitting a straight line to quadratic data).
+  Remedies: Increase model complexity, add feature interactions, reduce regularization.
+- The Bias-Variance Tradeoff: Minimizing total expected test error requires balancing model flexibility and generalization.
+
+4. EVALUATION METRICS
+For Classification:
+- Accuracy: Correct predictions / Total predictions (Misleading in imbalanced datasets).
+- Precision: True Positives / (True Positives + False Positives) - "When it predicts positive, how often is it right?"
+- Recall (Sensitivity): True Positives / (True Positives + False Negatives) - "What fraction of actual positives did it detect?"
+- F1-Score: Harmonic mean of Precision and Recall = 2 * (Precision * Recall) / (Precision + Recall).
+- ROC-AUC: Area under the Receiver Operating Characteristic curve.

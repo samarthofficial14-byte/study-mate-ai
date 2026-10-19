@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyMate AI — The AI-Powered Study Companion</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Marked for Markdown Rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Custom Styles for 3D Flashcards & Animations -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- TOP HEADER & NAVBAR -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('doubt')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+          <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span class="text-xl font-bold bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 bg-clip-text text-transparent">StudyMate AI</span>
+          <span class="hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">Study Companion</span>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons / Status -->
+      <div class="flex items-center space-x-3">
+        <div id="engineStatusBadge" class="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="engineStatusText">AI Ready</span>
+        </div>
+
+        <!-- API Key Settings Modal Trigger -->
+        <button onclick="openSettingsModal()" class="flex items-center space-x-1 px-3 py-1.5 text-xs font-medium rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-slate-100 transition border border-slate-200">
+          <i data-lucide="key" class="w-3.5 h-3.5"></i>
+          <span class="hidden md:inline">API Settings</span>
+        </button>
+
+        <!-- GitHub / Hackathon Repo Link -->
+        <a href="https://github.com" target="_blank" class="flex items-center space-x-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm">
+          <i data-lucide="github" class="w-3.5 h-3.5"></i>
+          <span class="hidden md:inline">GitHub</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- MAIN MODULE NAVIGATION TABS -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100 flex overflow-x-auto no-scrollbar space-x-1 sm:space-x-4 py-2">
+      <button onclick="switchTab('doubt')" id="tabBtn-doubt" class="tab-btn active-tab">
+        <i data-lucide="help-circle" class="w-4 h-4"></i>
+        <span>AI Doubt Solver</span>
+      </button>
+
+      <button onclick="switchTab('summarizer')" id="tabBtn-summarizer" class="tab-btn">
+        <i data-lucide="file-text" class="w-4 h-4"></i>
+        <span>Notes Summarizer</span>
+      </button>
+
+      <button onclick="switchTab('quiz')" id="tabBtn-quiz" class="tab-btn">
+        <i data-lucide="sparkles" class="w-4 h-4"></i>
+        <span>Quiz Generator</span>
+      </button>
+
+      <button onclick="switchTab('flashcards')" id="tabBtn-flashcards" class="tab-btn">
+        <i data-lucide="layers" class="w-4 h-4"></i>
+        <span>Flashcard Studio</span>
+      </button>
+
+      <button onclick="switchTab('exam')" id="tabBtn-exam" class="tab-btn">
+        <i data-lucide="calendar" class="w-4 h-4"></i>
+        <span>Exam Prep Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+
+    <!-- ========================================== -->
+    <!-- MODULE 1: AI DOUBT SOLVER -->
+    <!-- ========================================== -->
+    <section id="module-doubt" class="module-tab-content block">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left: Question Input & Controls -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div class="flex items-center space-x-3 mb-4">
+              <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <i data-lucide="message-square" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Ask Any Doubt</h2>
+                <p class="text-xs text-slate-500">Natural language explanations with analogies & steps</p>
+              </div>
+            </div>
+
+            <!-- Question Input -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Your Question</label>
+                <textarea id="doubtQuestion" rows="4" placeholder="e.g., Explain CPU scheduling like I'm a beginner..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"></textarea>
+              </div>
+
+              <!-- Explanation Level Toggle -->
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Explanation Persona</label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button type="button" onclick="setDoubtLevel('beginner')" id="doubtLevel-beginner" class="level-btn active-level">
+                    <span class="text-base">🐣</span>
+                    <span class="text-xs font-semibold">Beginner / ELI5</span>
+                  </button>
+                  <button type="button" onclick="setDoubtLevel('academic')" id="doubtLevel-academic" class="level-btn">
+                    <span class="text-base">🎓</span>
+                    <span class="text-xs font-semibold">Academic Rigor</span>
+                  </button>
+                  <button type="button" onclick="setDoubtLevel('exam')" id="doubtLevel-exam" class="level-btn">
+                    <span class="text-base">💼</span>
+                    <span class="text-xs font-semibold">Exam / Interview</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Optional Context Toggle -->
+              <details class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <summary class="cursor-pointer font-medium text-indigo-600 hover:text-indigo-700 select-none">
+                  + Add Reference Material / Context (Optional)
+                </summary>
+                <textarea id="doubtContext" rows="3" placeholder="Paste relevant notes or textbook excerpt here..." class="w-full mt-2 p-2 bg-white rounded-lg border border-slate-200 text-xs resize-none"></textarea>
+              </details>
+
+              <!-- Submit Button -->
+              <button onclick="handleSolveDoubt()" id="doubtSubmitBtn" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-indigo-100 flex items-center justify-center space-x-2 transition">
+                <i data-lucide="zap" class="w-4 h-4"></i>
+                <span>Solve Doubt Now</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Suggested Quick Presets -->
+          <div class="bg-indigo-50/50 rounded-2xl p-5 border border-indigo-100">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-900 mb-3 flex items-center space-x-1.5">
+              <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-indigo-600"></i>
+              <span>Popular Hackathon Demo Prompts</span>
+            </h3>
+            <div class="space-y-2">
+              <button onclick="loadDoubtPreset('Explain CPU scheduling like I\'m a beginner.', 'beginner')" class="preset-pill">
+                "Explain CPU scheduling like I'm a beginner."
+              </button>
+              <button onclick="loadDoubtPreset('What is the difference between Overfitting and Underfitting in Machine Learning?', 'beginner')" class="preset-pill">
+                "What is Overfitting vs Underfitting in ML?"
+              </button>
+              <button onclick="loadDoubtPreset('Explain the Convoy Effect in FCFS and how Round Robin prevents it.', 'exam')" class="preset-pill">
+                "Explain the Convoy Effect in FCFS (Exam Focus)"
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: AI Explanation Card -->
+        <div class="lg:col-span-7">
+          <div id="doubtPlaceholder" class="bg-white rounded-2xl p-12 text-center border border-slate-200 border-dashed min-h-[460px] flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-4">
+              <i data-lucide="sparkle" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-800">No active doubt asked yet</h3>
+            <p class="text-xs text-slate-500 max-w-sm mt-1">Type your question or click one of the suggested prompts to receive a crystal-clear breakdown with analogies and step-by-step logic.</p>
+          </div>
+
+          <div id="doubtLoading" class="hidden bg-white rounded-2xl p-12 text-center border border-slate-200 min-h-[460px] flex flex-col items-center justify-center">
+            <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+            <p class="text-sm font-semibold text-slate-700">Synthesizing intuitive explanation...</p>
+            <p class="text-xs text-slate-400 mt-1">Generating step-by-step breakdown & analogies</p>
+          </div>
+
+          <div id="doubtResult" class="hidden bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
+            <!-- Header -->
+            <div class="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div>
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 mb-1" id="doubtTopicBadge">Concept</span>
+                <h3 class="text-xl font-bold text-slate-900" id="doubtTopicTitle">Topic Title</h3>
+              </div>
+              <span id="doubtEngineTag" class="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-medium">Smart Engine</span>
+            </div>
+
+            <!-- Direct Answer -->
+            <div class="prose prose-slate text-sm leading-relaxed text-slate-700" id="doubtDirectAnswer"></div>
+
+            <!-- Real-World Analogy Callout -->
+            <div class="bg-amber-50/80 rounded-xl p-4 border border-amber-200/80 flex items-start space-x-3">
+              <span class="text-xl">💡</span>
+              <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-amber-900">Real-World Analogy</h4>
+                <p class="text-xs text-amber-800 mt-1 leading-relaxed" id="doubtAnalogy"></p>
+              </div>
+            </div>
+
+            <!-- Step by Step Breakdown -->
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center space-x-1.5">
+                <i data-lucide="list-ordered" class="w-4 h-4 text-indigo-600"></i>
+                <span>Step-by-Step Breakdown</span>
+              </h4>
+              <div class="space-y-2" id="doubtStepsList"></div>
+            </div>
+
+            <!-- Common Misconceptions & Exam Tip -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-rose-50/60 rounded-xl p-4 border border-rose-100">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-rose-900 flex items-center space-x-1 mb-2">
+                  <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-rose-500"></i>
+                  <span>Common Traps & Mistakes</span>
+                </h4>
+                <ul class="text-xs text-rose-800 space-y-1.5 list-disc list-inside" id="doubtMistakesList"></ul>
+              </div>
+
+              <div class="bg-emerald-50/60 rounded-xl p-4 border border-emerald-100">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-900 flex items-center space-x-1 mb-2">
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span>Exam Golden Rule</span>
+                </h4>
+                <p class="text-xs text-emerald-800 leading-relaxed font-medium" id="doubtQuickTip"></p>
+              </div>
+            </div>
+
+            <!-- Suggested Next Questions -->
+            <div class="pt-2 border-t border-slate-100">
+              <h4 class="text-xs font-semibold text-slate-500 mb-2">Continue Exploring:</h4>
+              <div class="flex flex-wrap gap-2" id="doubtFollowUps"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MODULE 2: NOTES SUMMARIZER -->
+    <!-- ========================================== -->
+    <section id="module-summarizer" class="module-tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left: Upload & Input Panel -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                  <i data-lucide="file-up" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h2 class="text-lg font-bold text-slate-900">Study Material</h2>
+                  <p class="text-xs text-slate-500">Upload PDF notes or paste your text</p>
+                </div>
+              </div>
+
+              <!-- Quick Demo Samples -->
+              <div class="flex items-center space-x-1">
+                <button onclick="loadSampleNotes('cpu_scheduling')" class="text-xs px-2.5 py-1 rounded bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition font-medium">
+                  Sample OS
+                </button>
+                <button onclick="loadSampleNotes('machine_learning')" class="text-xs px-2.5 py-1 rounded bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition font-medium">
+                  Sample ML
+                </button>
+              </div>
+            </div>
+
+            <!-- PDF Upload Dropzone -->
+            <div class="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-xl p-4 text-center cursor-pointer transition bg-slate-50/50 mb-4" onclick="document.getElementById('pdfFileInput').click()">
+              <input type="file" id="pdfFileInput" accept=".pdf" class="hidden" onchange="handlePdfUpload(event)">
+              <div class="flex flex-col items-center justify-center space-y-2">
+                <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-slate-700">Click to upload PDF notes</p>
+                  <p class="text-[10px] text-slate-400">PDF documents up to 16MB supported</p>
+                </div>
+              </div>
+            </div>
+
+            <div id="pdfUploadStatus" class="hidden mb-3 p-2.5 rounded-lg bg-indigo-50 text-indigo-800 text-xs flex items-center justify-between">
+              <span id="pdfStatusText">Extracted text successfully</span>
+              <button onclick="clearUploadedPdf()" class="text-indigo-600 hover:text-indigo-900 font-bold">×</button>
+            </div>
+
+            <!-- Text Paste Area -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Or Paste Note Text</label>
+                <span id="noteStats" class="text-[11px] text-slate-400">0 words</span>
+              </div>
+              <textarea id="noteContent" rows="9" placeholder="Paste notes, lecture transcripts, or textbook chapters here..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-mono resize-none"></textarea>
+            </div>
+
+            <!-- Focus Area Selector -->
+            <div class="mt-4">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Summary Mode</label>
+              <select id="summaryFocus" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="comprehensive">Comprehensive Study Synthesis</option>
+                <option value="definitions">Glossary & Core Definitions Only</option>
+                <option value="exam_revision">High-Yield Exam Points & Cheat Sheet</option>
+              </select>
+            </div>
+
+            <!-- Action Button -->
+            <button onclick="handleSummarizeNotes()" id="summarizeBtn" class="w-full mt-4 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-indigo-100 flex items-center justify-center space-x-2 transition">
+              <i data-lucide="file-check-2" class="w-4 h-4"></i>
+              <span>Generate Summary & Definitions</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Summary Output -->
+        <div class="lg:col-span-7">
+          <div id="summaryPlaceholder" class="bg-white rounded-2xl p-12 text-center border border-slate-200 border-dashed min-h-[460px] flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-4">
+              <i data-lucide="file-text" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-800">No notes summarized yet</h3>
+            <p class="text-xs text-slate-500 max-w-sm mt-1">Upload a PDF or paste lecture notes on the left (or click 'Sample OS') to generate structured executive summaries, glossaries, and cheat sheets.</p>
+          </div>
+
+          <div id="summaryLoading" class="hidden bg-white rounded-2xl p-12 text-center border border-slate-200 min-h-[460px] flex flex-col items-center justify-center">
+            <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+            <p class="text-sm font-semibold text-slate-700">Synthesizing notes & extracting key concepts...</p>
+            <p class="text-xs text-slate-400 mt-1">Parsing definitions and building quick revision points</p>
+          </div>
+
+          <div id="summaryResult" class="hidden bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
+            <!-- Header & Export Tools -->
+            <div class="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div>
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 mb-1">Synthesized Notes</span>
+                <h3 class="text-xl font-bold text-slate-900" id="summaryTitle">Subject Summary</h3>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button onclick="copySummaryToClipboard()" class="p-2 text-slate-500 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition" title="Copy to clipboard">
+                  <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+                <button onclick="window.print()" class="p-2 text-slate-500 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition" title="Print / Save PDF">
+                  <i data-lucide="printer" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Executive Summary -->
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Executive Overview</h4>
+              <div class="prose prose-slate text-sm leading-relaxed text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200" id="summaryExecText"></div>
+            </div>
+
+            <!-- Key Concepts Tags -->
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Key Themes & Concepts</h4>
+              <div class="flex flex-wrap gap-2" id="summaryKeyConcepts"></div>
+            </div>
+
+            <!-- Definitions Glossary -->
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center space-x-1.5">
+                <i data-lucide="book-open" class="w-4 h-4 text-indigo-600"></i>
+                <span>Technical Glossary & Definitions</span>
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="summaryDefinitionsList"></div>
+            </div>
+
+            <!-- High-Yield Revision Points -->
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center space-x-1.5">
+                <i data-lucide="check-square" class="w-4 h-4 text-emerald-600"></i>
+                <span>Rapid Revision Points (Exam Essentials)</span>
+              </h4>
+              <ul class="space-y-2" id="summaryRevisionList"></ul>
+            </div>
+
+            <!-- 1-Minute Cheat Sheet -->
+            <div class="bg-indigo-50/70 rounded-xl p-4 border border-indigo-100">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-900 mb-2 flex items-center space-x-1.5">
+                <i data-lucide="zap" class="w-4 h-4 text-indigo-600"></i>
+                <span>1-Minute Exam Cheat Sheet (Formulas & Rules)</span>
+              </h4>
+              <div class="space-y-1.5 font-mono text-xs text-indigo-950" id="summaryCheatSheetList"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MODULE 3: AUTOMATIC QUIZ GENERATOR -->
+    <!-- ========================================== -->
+    <section id="module-quiz" class="module-tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left: Quiz Configuration -->
+        <div class="lg:col-span-4 space-y-6">
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div class="flex items-center space-x-3 mb-4">
+              <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <i data-lucide="target" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Quiz Settings</h2>
+                <p class="text-xs text-slate-500">Generate MCQs from notes</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Study Material Context</label>
+                <textarea id="quizContextText" rows="6" placeholder="Paste notes to test your understanding on..." class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-mono resize-none"></textarea>
+                <div class="flex justify-end mt-1">
+                  <button onclick="syncNotesToQuiz()" class="text-[11px] text-indigo-600 hover:underline">Use Notes from Summarizer Tab</button>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Questions</label>
+                  <select id="quizNumQuestions" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+                    <option value="3">3 Questions</option>
+                    <option value="5" selected>5 Questions</option>
+                    <option value="10">10 Questions</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Difficulty</label>
+                  <select id="quizDifficulty" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+                    <option value="easy">Easy (Definitions)</option>
+                    <option value="medium" selected>Medium (Conceptual)</option>
+                    <option value="hard">Hard (Analytical)</option>
+                  </select>
+                </div>
+              </div>
+
+              <button onclick="handleGenerateQuiz()" id="generateQuizBtn" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-indigo-100 flex items-center justify-center space-x-2 transition">
+                <i data-lucide="play" class="w-4 h-4"></i>
+                <span>Generate & Start Quiz</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Interactive Quiz Arena -->
+        <div class="lg:col-span-8">
+          <div id="quizPlaceholder" class="bg-white rounded-2xl p-12 text-center border border-slate-200 border-dashed min-h-[460px] flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-4">
+              <i data-lucide="help-circle" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-800">No active quiz generated</h3>
+            <p class="text-xs text-slate-500 max-w-sm mt-1">Configure your question count and click 'Generate & Start Quiz' to test your active recall with instant grading and in-depth explanations.</p>
+          </div>
+
+          <div id="quizLoading" class="hidden bg-white rounded-2xl p-12 text-center border border-slate-200 min-h-[460px] flex flex-col items-center justify-center">
+            <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+            <p class="text-sm font-semibold text-slate-700">Synthesizing multiple-choice questions...</p>
+            <p class="text-xs text-slate-400 mt-1">Formulating distractors and pedagogical explanations</p>
+          </div>
+
+          <!-- Active Quiz Container -->
+          <div id="quizContainer" class="hidden bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
+            <!-- Quiz Progress & Timer Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700" id="quizDifficultyBadge">Medium</span>
+                <h3 class="text-lg font-bold text-slate-900 mt-1" id="quizActiveTitle">Active Quiz</h3>
+              </div>
+              <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-1.5 text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
+                  <i data-lucide="clock" class="w-3.5 h-3.5 text-indigo-600"></i>
+                  <span id="quizTimerText">00:00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quiz Questions List -->
+            <div id="quizQuestionsList" class="space-y-6"></div>
+
+            <!-- Submit Quiz Action -->
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-between" id="quizActionsRow">
+              <span class="text-xs text-slate-500" id="quizAnsweredCountText">0 of 5 answered</span>
+              <button onclick="submitQuiz()" id="submitQuizBtn" class="py-2.5 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-md transition">
+                Submit Test & View Score
+              </button>
+            </div>
+
+            <!-- Score Summary Card (Appears after submission) -->
+            <div id="quizScoreCard" class="hidden bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl p-6 border border-indigo-100 text-center space-y-4">
+              <div class="inline-block w-16 h-16 rounded-full bg-white text-indigo-600 flex items-center justify-center font-black text-2xl shadow-sm mx-auto" id="quizScoreCircle">
+                80%
+              </div>
+              <div>
+                <h4 class="text-lg font-bold text-slate-900" id="quizScoreTitle">Great Job!</h4>
+                <p class="text-xs text-slate-600" id="quizScoreSubtitle">You scored 4 out of 5 questions correctly.</p>
+              </div>
+              <div class="flex justify-center space-x-3">
+                <button onclick="retakeQuiz()" class="px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition">
+                  Retake Quiz
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MODULE 4: FLASHCARD GENERATOR -->
+    <!-- ========================================== -->
+    <section id="module-flashcards" class="module-tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left: Flashcard Settings -->
+        <div class="lg:col-span-4 space-y-6">
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div class="flex items-center space-x-3 mb-4">
+              <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <i data-lucide="layers" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Flashcard Studio</h2>
+                <p class="text-xs text-slate-500">Active recall for rapid memory</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Study Notes</label>
+                <textarea id="flashcardContextText" rows="6" placeholder="Paste notes to extract Q&A flashcards from..." class="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-mono resize-none"></textarea>
+                <div class="flex justify-end mt-1">
+                  <button onclick="syncNotesToFlashcards()" class="text-[11px] text-indigo-600 hover:underline">Use Notes from Summarizer Tab</button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Number of Flashcards</label>
+                <select id="flashcardCount" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+                  <option value="4">4 Cards (Quick Review)</option>
+                  <option value="6" selected>6 Cards (Standard)</option>
+                  <option value="10">10 Cards (Comprehensive)</option>
+                </select>
+              </div>
+
+              <button onclick="handleGenerateFlashcards()" id="generateFlashcardsBtn" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-indigo-100 flex items-center justify-center space-x-2 transition">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                <span>Generate Flashcard Deck</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mastery Progress -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-200">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Deck Mastery Progress</h4>
+            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+              <div id="flashcardMasteryBar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between text-[11px] text-slate-500 mt-1.5">
+              <span id="flashcardMasteryText">0 of 0 Mastered</span>
+              <span id="flashcardMasteryPercent">0%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: 3D Interactive Flashcard Viewer -->
+        <div class="lg:col-span-8">
+          <div id="flashcardPlaceholder" class="bg-white rounded-2xl p-12 text-center border border-slate-200 border-dashed min-h-[460px] flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-4">
+              <i data-lucide="layers" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-800">No flashcards generated yet</h3>
+            <p class="text-xs text-slate-500 max-w-sm mt-1">Generate a deck from your study notes to flip through interactive 3D Question & Answer flashcards with spaced-repetition mastery tracking.</p>
+          </div>
+
+          <div id="flashcardLoading" class="hidden bg-white rounded-2xl p-12 text-center border border-slate-200 min-h-[460px] flex flex-col items-center justify-center">
+            <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+            <p class="text-sm font-semibold text-slate-700">Synthesizing Question & Answer Flashcards...</p>
+            <p class="text-xs text-slate-400 mt-1">Formulating active-recall prompts</p>
+          </div>
+
+          <!-- Active Flashcard Stage -->
+          <div id="flashcardStage" class="hidden space-y-6">
+            
+            <!-- Controls Bar -->
+            <div class="flex items-center justify-between bg-white px-5 py-3 rounded-xl border border-slate-200">
+              <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold text-indigo-600" id="cardCounter">Card 1 of 5</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600" id="cardCategory">Core Concept</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button onclick="exportFlashcardsJson()" class="text-xs text-slate-600 hover:text-indigo-600 font-medium px-2 py-1 rounded hover:bg-slate-50 transition" title="Export as JSON">
+                  Export JSON
+                </button>
+                <button onclick="shuffleFlashcards()" class="p-1.5 text-slate-500 hover:text-indigo-600 rounded hover:bg-slate-50 transition" title="Shuffle Deck">
+                  <i data-lucide="shuffle" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 3D Flip Card Container -->
+            <div class="flashcard-scene" onclick="flipCurrentCard()">
+              <div class="flashcard-card" id="activeFlipCard">
+                <!-- Front Side -->
+                <div class="flashcard-face flashcard-front">
+                  <div class="w-full flex justify-between items-center text-xs text-slate-400 font-medium">
+                    <span>QUESTION / PROMPT</span>
+                    <span class="flex items-center space-x-1 text-indigo-500">
+                      <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+                      <span>Click to reveal answer</span>
+                    </span>
+                  </div>
+                  <div class="my-auto text-center px-6">
+                    <p class="text-lg sm:text-xl font-bold text-slate-800 leading-snug" id="cardFrontText">Front Prompt</p>
+                  </div>
+                  <div class="text-[11px] text-slate-400 text-center">
+                    Press <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-[10px]">Space</kbd> or click to flip
+                  </div>
+                </div>
+
+                <!-- Back Side -->
+                <div class="flashcard-face flashcard-back">
+                  <div class="w-full flex justify-between items-center text-xs text-indigo-200 font-medium">
+                    <span>ANSWER & EXPLANATION</span>
+                    <span class="flex items-center space-x-1 text-white">
+                      <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+                      <span>Click to flip back</span>
+                    </span>
+                  </div>
+                  <div class="my-auto text-center px-6">
+                    <p class="text-base sm:text-lg font-medium text-white leading-relaxed" id="cardBackText">Back Answer</p>
+                  </div>
+                  <div class="text-[11px] text-indigo-200 text-center">
+                    Review and mark your mastery below
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Navigation & Mastery Action Bar -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <!-- Prev / Next Navigation -->
+              <div class="flex items-center space-x-2">
+                <button onclick="prevFlashcard()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl border border-slate-200 transition flex items-center space-x-1">
+                  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                  <span>Previous</span>
+                </button>
+                <button onclick="nextFlashcard()" class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl border border-slate-200 transition flex items-center space-x-1">
+                  <span>Next</span>
+                  <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <!-- Mastery Buttons -->
+              <div class="flex items-center space-x-2">
+                <button onclick="markCardMastery(false)" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-xs rounded-xl border border-rose-200 transition flex items-center space-x-1.5">
+                  <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+                  <span>Need Review</span>
+                </button>
+                <button onclick="markCardMastery(true)" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs rounded-xl border border-emerald-200 transition flex items-center space-x-1.5">
+                  <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                  <span>Mastered!</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MODULE 5: EXAM PREPARATION MODE -->
+    <!-- ========================================== -->
+    <section id="module-exam" class="module-tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left: Exam Planner Setup -->
+        <div class="lg:col-span-5 space-y-6">
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div class="flex items-center space-x-3 mb-4">
+              <div class="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Exam Strategy Planner</h2>
+                <p class="text-xs text-slate-500">Structured schedule & revision checklist</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Subject / Course Name</label>
+                <input type="text" id="examSubject" placeholder="e.g., Operating Systems (CS301)" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-medium">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Syllabus / Topics to Cover</label>
+                <textarea id="examTopics" rows="4" placeholder="Enter topics separated by commas or lines, e.g.:
+CPU Scheduling (FCFS, SJF, Round Robin),
+Process Synchronization, Deadlocks,
+Memory Management, Virtual Memory & Paging" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs resize-none"></textarea>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Time Available</label>
+                  <select id="examTimeAvailable" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+                    <option value="12 hours (Last-Minute Sprint)">12 Hours (Cram Sprint)</option>
+                    <option value="24 hours (1 Day)">24 Hours (1 Day)</option>
+                    <option value="3 days" selected>3 Days</option>
+                    <option value="1 week">1 Week</option>
+                    <option value="2 weeks">2 Weeks</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Target Goal</label>
+                  <select id="examTargetGoal" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white">
+                    <option value="top_grade" selected>Top Grade (95%+)</option>
+                    <option value="passing">Solid Pass (75%+)</option>
+                    <option value="cramming">Emergency Cram</option>
+                  </select>
+                </div>
+              </div>
+
+              <button onclick="handleGenerateExamPlan()" id="generatePlanBtn" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-indigo-100 flex items-center justify-center space-x-2 transition">
+                <i data-lucide="compass" class="w-4 h-4"></i>
+                <span>Generate Revision Roadmap</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Concept Completion Progress Widget -->
+          <div id="checklistProgressCard" class="bg-white rounded-2xl p-5 border border-slate-200 space-y-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Checklist Completion Rate</h4>
+            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+              <div id="checklistProgressBar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between text-xs text-slate-600 font-semibold">
+              <span id="checklistCountText">0 of 0 Concepts Checked</span>
+              <span id="checklistPercentText">0% Ready</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Roadmap & Checklist Output -->
+        <div class="lg:col-span-7">
+          <div id="examPlaceholder" class="bg-white rounded-2xl p-12 text-center border border-slate-200 border-dashed min-h-[460px] flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-4">
+              <i data-lucide="calendar" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-800">No exam plan generated yet</h3>
+            <p class="text-xs text-slate-500 max-w-sm mt-1">Specify your subject and available study time on the left to generate an actionable day-by-day revision schedule and an interactive concept checklist.</p>
+          </div>
+
+          <div id="examLoading" class="hidden bg-white rounded-2xl p-12 text-center border border-slate-200 min-h-[460px] flex flex-col items-center justify-center">
+            <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+            <p class="text-sm font-semibold text-slate-700">Synthesizing personalized revision roadmap...</p>
+            <p class="text-xs text-slate-400 mt-1">Calculating time distributions & high-yield checklists</p>
+          </div>
+
+          <div id="examResult" class="hidden bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6">
+            <!-- Header -->
+            <div class="border-b border-slate-100 pb-4">
+              <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 mb-1">Revision Roadmap</span>
+              <h3 class="text-xl font-bold text-slate-900" id="planSubjectTitle">Subject Exam Roadmap</h3>
+            </div>
+
+            <!-- Strategy Overview Briefing -->
+            <div class="bg-indigo-50/70 rounded-xl p-4 border border-indigo-100">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-900 mb-1 flex items-center space-x-1.5">
+                <i data-lucide="target" class="w-3.5 h-3.5 text-indigo-600"></i>
+                <span>Executive Strategy</span>
+              </h4>
+              <p class="text-xs text-indigo-950 leading-relaxed" id="planOverviewText"></p>
+            </div>
+
+            <!-- Pomodoro Routine Callout -->
+            <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200 flex items-center space-x-3 text-xs text-slate-700">
+              <span class="text-xl">⏱️</span>
+              <div>
+                <span class="font-bold text-slate-900">Recommended Time Block: </span>
+                <span id="planPomodoroText">50 min deep study + 10 min active break</span>
+              </div>
+            </div>
+
+            <!-- Day-by-Day / Phase Schedule -->
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center space-x-1.5">
+                <i data-lucide="clock" class="w-4 h-4 text-indigo-600"></i>
+                <span>Phased Revision Schedule</span>
+              </h4>
+              <div class="space-y-3" id="planScheduleList"></div>
+            </div>
+
+            <!-- Interactive Concept Checklist -->
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center space-x-1.5">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                  <span>Interactive Concept Mastery Checklist</span>
+                </h4>
+                <span class="text-[11px] text-slate-400">Click checkboxes to track revision progress</span>
+              </div>
+              <div class="space-y-2" id="planChecklistItems"></div>
+            </div>
+
+            <!-- Exam Day Traps & Tips -->
+            <div class="bg-amber-50/70 rounded-xl p-4 border border-amber-200">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-amber-900 mb-2 flex items-center space-x-1.5">
+                <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-amber-600"></i>
+                <span>High-Yield Exam Day Scoring Tips</span>
+              </h4>
+              <ul class="text-xs text-amber-900 space-y-1.5 list-disc list-inside" id="planTipsList"></ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SETTINGS MODAL (Custom API Key Entry) -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+          <i data-lucide="sliders" class="w-4 h-4 text-indigo-600"></i>
+          <span>AI Engine Configuration</span>
+        </h3>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+      </div>
+
+      <p class="text-xs text-slate-500">
+        StudyMate AI is built with an offline-first resilient architecture. It includes an intelligent local NLP engine that works out of the box with zero setup, but you can also provide your own Google Gemini or OpenAI API key.
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Custom Gemini / OpenAI API Key (Optional)</label>
+          <input type="password" id="customApiKeyInput" placeholder="AIzaSy... or sk-..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+          <p class="text-[10px] text-slate-400 mt-1">Key is stored only in your local browser session storage.</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+        <button onclick="closeSettingsModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">
+          Cancel
+        </button>
+        <button onclick="saveCustomApiKey()" class="px-4 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition">
+          Save Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>🎓 <strong>StudyMate AI</strong> — Built for Hackathons & Resume Demonstration.</p>
+      <p class="text-[11px] text-slate-400">Features: AI Doubt Solver • Notes Summarizer • Quiz Engine • Flashcards • Exam Planner</p>
+    </div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script src="/static/js/app.js"></script>
+  <script>
+    // Initialize Lucide icons on load
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
